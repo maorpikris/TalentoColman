@@ -8,6 +8,7 @@ import cs.colman.talento.TAG
 import cs.colman.talento.data.local.dao.UserDao
 import cs.colman.talento.data.model.User
 import cs.colman.talento.data.model.UserWithBusiness
+import cs.colman.talento.utils.ImageUploadService
 import cs.colman.talento.utils.NetworkResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -157,6 +158,23 @@ class UserRepository(
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating user profile", e)
                 NetworkResult.Error("Error updating profile")
+            }
+        }
+    }
+
+    suspend fun uploadProfileImage(userId: String, imageUri: Uri): NetworkResult<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val imageUrl = ImageUploadService.uploadImage(imageUri, "user-profile-$userId")
+
+                if (imageUrl != null) {
+                    NetworkResult.Success(imageUrl)
+                } else {
+                    NetworkResult.Error("Error uploading image")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error uploading profile image: ${e.message}")
+                NetworkResult.Error("Error uploading image")
             }
         }
     }
